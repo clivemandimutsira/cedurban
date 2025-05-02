@@ -4,12 +4,29 @@ require('dotenv').config();
 const path = require('path');
 const app = express();
 
-app.use(cors());
+// Set up allowed origins dynamically based on environment
+const allowedOrigins = [
+  'http://localhost:3000',  // Localhost for development
+  'https://churchmanagementsystem.netlify.app/',  // Replace with your actual Netlify domain
+];
 
-// 🛠 Ensure JSON and plain text are accepted (important for `fetch`)
+// CORS Configuration
+app.use(cors({
+  origin: function (origin, callback) {
+    if (allowedOrigins.indexOf(origin) !== -1 || !origin) {
+      callback(null, true);  // Allow the request
+    } else {
+      callback(new Error('Not allowed by CORS'));  // Block the request
+    }
+  },
+  methods: ['GET', 'POST', 'PUT', 'DELETE'],  // Allowed HTTP methods
+  credentials: true,  // Allow cookies to be sent
+}));
+
+// Ensure JSON and plain text are accepted (important for `fetch` requests)
 app.use(express.json({ type: ['application/json', 'text/plain'] }));
 
-// 🖼️ Static file serving (profile photos)
+// Static file serving for images (profile photos, etc.)
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // ✅ Core RBAC Routes
@@ -26,7 +43,8 @@ app.use('/api/cell-groups', require('./routes/cellGroupRoutes'));
 app.use('/api/member-cell-groups', require('./routes/memberCellGroupRoutes'));
 app.use('/api/departments', require('./routes/departmentRoutes'));
 app.use('/api/member-departments', require('./routes/memberDepartmentRoutes'));
-// backend/src/app.js (or wherever routes are mounted)
+
+// Additional Routes for other systems
 app.use('/api/first-timers', require('./routes/firstTimerRoutes'));
 app.use('/api/new-converts', require('./routes/newConvertRoutes'));
 app.use('/api/admin', require('./routes/adminRoutes'));
@@ -34,14 +52,20 @@ app.use('/api/milestone-templates', require('./routes/milestoneTemplateRoutes'))
 app.use('/api/milestones', require('./routes/milestoneRecordRoutes'));
 app.use('/api/counseling', require('./routes/counselingRoutes'));
 app.use('/api/prayer-requests', require('./routes/prayerRequestRoutes'));
-
-
-
-
 app.use('/api/notifications', require('./routes/notificationRoutes'));
 
-
-// 🩺 Health check
+// 🩺 Health check route
 app.get('/', (req, res) => res.send('RBAC + Membership Backend Running ✅'));
+
+// Serve static files in production (React Frontend build directory)
+if (process.env.NODE_ENV === 'production') {
+  // Set up the static folder to serve the React build files
+  app.use(express.static(path.join(__dirname, 'client/build')));
+
+  // Handle all routes and redirect them to the React app (single-page app routing)
+  app.get('*', (req, res) => {
+    res.sendFile(path.join(__dirname, 'client', 'build', 'index.html'));
+  });
+}
 
 module.exports = app;
