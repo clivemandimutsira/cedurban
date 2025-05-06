@@ -9,15 +9,27 @@ const MAX_FAILED = parseInt(process.env.MAX_FAILED, 10) || 5;
 const LOCK_DURATION_MINUTES = parseInt(process.env.LOCK_DURATION_MINUTES, 10) || 15;
 
 // POST /auth/register — mainly for manual user creation
+// POST /auth/register
 exports.register = async (req, res) => {
   try {
-    const { email } = req.body;
-    const user = await User.create({ email });
-    
+    const { email, password } = req.body;
+
+    if (!email || !password) {
+      return res.status(400).json({ message: 'Email and password are required.' });
+    }
+
+    const existing = await User.getByEmail(email);
+    if (existing) {
+      return res.status(409).json({ message: 'Email already registered.' });
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    const user = await User.createWithPassword({ email, passwordHash: hashedPassword });
+
     res.status(201).json({
       id: user.id,
-      email: user.email,
-      tempPassword: user.tempPassword // Send this to frontend/admin
+      email: user.email
     });
   } catch (err) {
     console.error('Registration error:', err);
