@@ -229,6 +229,19 @@ class UserModel {
     );
     return res.rows[0];
   }
+
+
+
+static async createWithPassword({ email, passwordHash }) {
+  const res = await db.query(
+    `INSERT INTO users (email, password_hash, password_reset_required)
+     VALUES ($1, $2, FALSE)
+     RETURNING id, email`,
+    [email, passwordHash]
+  );
+
+  return res.rows[0];
+}
 }
 
 module.exports = UserModel;
