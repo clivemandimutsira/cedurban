@@ -9,7 +9,7 @@ const app = express();
 // ✅ CORS Configuration
 const allowedOrigins = [
   'http://localhost:3000',
-  'https://cedurbanmain-fmo3.onrender.com', // Replace with your real Netlify URL
+  'https://cedurbanzone.onrender.com', // Replace with your real Netlify URL
 ];
 
 app.use(cors({
