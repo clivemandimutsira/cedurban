@@ -89,12 +89,6 @@ app.use('/api', require('./routes/pledgeRoutes'));
 // Health check
 app.get('/', (req, res) => res.send('RBAC + Membership Backend Running ✅'));
 
-// --- Serve React frontend build ---
-app.use(express.static(path.join(__dirname, '../../client/build')));
 
-// React Router catch-all handler for any other route (like /verify-email)
-app.get('*', (req, res) => {
-  res.sendFile(path.resolve(__dirname, '../../client', 'build', 'index.html'));
-});
 
 module.exports = app;
