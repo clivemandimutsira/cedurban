@@ -1,15 +1,14 @@
-// server/app.js
 const express = require('express');
-const cors    = require('cors');
+const cors = require('cors');
 require('dotenv').config();
-const path    = require('path');
+const path = require('path');
 
 const app = express();
 
 // ✅ CORS Configuration
 const allowedOrigins = [
   'http://localhost:3000',
-  'https://cedurbanzone.onrender.com', // Replace with your real Netlify URL
+  'https://cedurbanzone.onrender.com', // Replace with your real frontend URL(s)
 ];
 
 app.use(cors({
@@ -28,6 +27,7 @@ app.use(express.json({ type: ['application/json', 'text/plain'] }));
 // Static uploads (e.g. proof URLs, profile pics)
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
+// --- API Routes ---
 
 // Auth & RBAC
 app.use('/api/auth',        require('./routes/authRoutes'));
@@ -78,12 +78,9 @@ app.use('/api/settings/income-categories',         require('./routes/incomeCateg
 app.use('/api/settings/badges', require('./routes/badgeRoutes'));
 app.use('/api/settings/member-badges', require('./routes/memberBadgeRoutes'));
 app.use('/api/settings/pledges', require('./routes/pledgeRoutes'));
-// Mount routes
+
+// Import columns
 app.use('/api/import-columns', require('./routes/importColumnRoutes'));
-
-
-
-
 
 // Member‐side finance (MVC)
 app.use('/api', require('./routes/contributionRoutes'));
@@ -91,5 +88,13 @@ app.use('/api', require('./routes/pledgeRoutes'));
 
 // Health check
 app.get('/', (req, res) => res.send('RBAC + Membership Backend Running ✅'));
+
+// --- Serve React frontend build ---
+app.use(express.static(path.join(__dirname, '../../client/build')));
+
+// React Router catch-all handler for any other route (like /verify-email)
+app.get('*', (req, res) => {
+  res.sendFile(path.resolve(__dirname, '../../client', 'build', 'index.html'));
+});
 
 module.exports = app;
