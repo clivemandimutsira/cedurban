@@ -9,6 +9,9 @@ const db = require('../config/db');
 const MAX_FAILED = parseInt(process.env.MAX_FAILED, 10) || 5;
 const LOCK_DURATION_MINUTES = parseInt(process.env.LOCK_DURATION_MINUTES, 10) || 15;
 
+// Hardcoded frontend base URL (Render)
+const FRONTEND_BASE_URL = 'https://cedurbanzone.onrender.com';
+
 // POST /auth/register — Email-only Registration
 exports.register = async (req, res) => {
   try {
@@ -24,9 +27,7 @@ exports.register = async (req, res) => {
     }
 
     const user = await User.createWithoutPassword(email);
-
-    // Log user object
-    console.log("✅ Registered user:", user); // Add this line for debugging
+    console.log("✅ Registered user:", user);
 
     const token = jwt.sign(
       { userId: user.id },
@@ -34,9 +35,7 @@ exports.register = async (req, res) => {
       { expiresIn: '24h' }
     );
 
-    const verifyUrl = `${process.env.FRONTEND_BASE_URL}/verify-email?token=${token}`;
-
-    // LOG email just before sending
+    const verifyUrl = `${FRONTEND_BASE_URL}/verify-email?token=${token}`;
     console.log("📬 Sending verification email to:", user.email);
 
     try {
@@ -65,7 +64,6 @@ exports.login = async (req, res) => {
       return res.status(401).json({ message: 'Invalid credentials.' });
     }
 
-    // Check if account is locked
     if (user.lockout_until && new Date(user.lockout_until) > new Date()) {
       const msLeft = new Date(user.lockout_until) - new Date();
       const minsLeft = Math.ceil(msLeft / 60000);
@@ -74,7 +72,6 @@ exports.login = async (req, res) => {
         .json({ message: `Account locked. Try again in ${minsLeft} minute(s).` });
     }
 
-    // Check password (temp or permanent)
     const isTemp = user.password_reset_required && user.temp_password;
     const hashToCheck = isTemp ? user.temp_password : user.password_hash;
     const valid = await bcrypt.compare(password, hashToCheck);
@@ -97,7 +94,6 @@ exports.login = async (req, res) => {
         .json({ message: `Invalid credentials. ${triesLeft} attempt(s) remaining.` });
     }
 
-    // Login success
     await User.resetFailedAttempts(user.id);
     const token = jwt.sign(
       { userId: user.id },
@@ -125,7 +121,6 @@ exports.requestReset = async (req, res) => {
     const { email } = req.body;
     const user = await User.getByEmail(email);
 
-    // Always respond the same to avoid email enumeration
     if (!user) {
       return res.status(200).json({ message: 'If the email exists, reset instructions have been sent.' });
     }
@@ -136,7 +131,7 @@ exports.requestReset = async (req, res) => {
       { expiresIn: '1h' }
     );
 
-    const resetUrl = `${process.env.FRONTEND_BASE_URL}/reset-password?token=${resetToken}`;
+    const resetUrl = `${FRONTEND_BASE_URL}/reset-password?token=${resetToken}`;
 
     await sendEmail({
       to: user.email,
@@ -166,6 +161,8 @@ exports.resetPassword = async (req, res) => {
     res.status(400).json({ message: 'Invalid or expired reset token.' });
   }
 };
+
+// POST /auth/verify-email
 exports.verifyEmail = async (req, res) => {
   try {
     const { token, password } = req.body;
@@ -174,13 +171,9 @@ exports.verifyEmail = async (req, res) => {
       return res.status(400).json({ message: 'Token and password are required.' });
     }
 
-    // Verify JWT token using secret
     const payload = jwt.verify(token, process.env.JWT_VERIFY_SECRET);
-
-    // Hash the new password
     const hash = await bcrypt.hash(password, 10);
 
-    // Update user password, mark verified and clear reset flags
     await db.query(`
       UPDATE users
       SET password_hash = $1,
