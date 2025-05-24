@@ -86,7 +86,7 @@ app.use('/api/import-columns', require('./routes/importColumnRoutes'));
 //app.use('/api/contributions', require('./routes/contributionRoutes'));
 //app.use('/api/pledges', require('./routes/pledgeRoutes'));
 app.use('/api/contributions', require('./routes/contributionRoutes'));
-app.use('/api/lifecycle', require('./routes/lifecycleRoutes'));
+//app.use('/api/lifecycle', require('./routes/lifecycleRoutes'));
 app.use('/api/member-prayer-requests', require('./routes/memberPrayerRequestRoutes'));
 //app.use('/api/cell-group-rules', require('./routes/rulesRoutes'));
 app.use('/api/pledges', require('./routes/pledgeRoutes'));
