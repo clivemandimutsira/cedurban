@@ -77,14 +77,14 @@ app.use('/api/settings',                           require('./routes/settingRout
 app.use('/api/settings/income-categories',         require('./routes/incomeCategoryRoutes'));
 app.use('/api/settings/badges', require('./routes/badgeRoutes'));
 app.use('/api/settings/member-badges', require('./routes/memberBadgeRoutes'));
-app.use('/api/settings/pledges', require('./routes/pledgeRoutes'));
+//app.use('/api/settings/pledges', require('./routes/pledgeRoutes'));
 
 // Import columns
 app.use('/api/import-columns', require('./routes/importColumnRoutes'));
 
 // Member‐side finance (MVC)
-app.use('/api/contributions', require('./routes/contributionRoutes'));
-app.use('/api/pledges', require('./routes/pledgeRoutes'));
+//app.use('/api/contributions', require('./routes/contributionRoutes'));
+//app.use('/api/pledges', require('./routes/pledgeRoutes'));
 
 
 // Health check
