@@ -94,12 +94,4 @@ app.use('/api', require('./routes/pledgeRoutes'));
 // Health check
 app.get('/api/health', (req, res) => res.send('RBAC + Membership Backend Running ✅'));
 
-// ✅ Serve React client (SPA support)
-const clientBuildPath = path.join(__dirname, '..', 'build');
-app.use(express.static(clientBuildPath));
-
-app.get('*', (req, res) => {
-  res.sendFile(path.join(clientBuildPath, 'index.html'));
-});
-
 module.exports = app;
