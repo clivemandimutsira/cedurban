@@ -3,8 +3,9 @@ const express = require('express');
 const ctrl    = require('../controllers/contributionController');
 const router  = express.Router();
 
-router.get('/members/:id/contributions', ctrl.getByMember);
-router.post('/contributions/:id/proof',  ctrl.uploadProof);
-router.post('/contributions/pay',        ctrl.makePayment);
+router.get('/member/:id', ctrl.getByMember);
+router.post('/:id/proof', ctrl.uploadProof);
+router.post('/pay', ctrl.makePayment);
+
 
 module.exports = router;
